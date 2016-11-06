@@ -1,0 +1,18 @@
+{
+    "operators": [
+        {
+            "name": "O2",
+            "url": "http://international.o2.co.uk/internationaltariffs/calling_abroad_from_uk",
+            "actions": [
+                { "type_zone": ".//*[@id='countryName']" },
+                { "click": ".//*[@id='paymonthly']" },
+                { "get_cost": ".//*[@id='landLine']/strong" }
+            ],
+            "sleep_time": 3,
+            "zones": [
+                "Canada",
+                "Pakistan"
+            ]
+        }
+    ]
+}

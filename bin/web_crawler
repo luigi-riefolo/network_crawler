@@ -1,0 +1,187 @@
+#!/bin/bash
+
+# CHECK BASH VERSION FOR ASSOCIATIVE ARRAY
+# /usr/local/bin/bash new
+# /bin/bash old
+
+# This bash script wraps the functionalities
+
+exit_codes=
+
+if [[ "$BASH_VERSION" =~ ^4 ]]
+then
+    echo "OLD!!!!!!!!!!!!!!"
+    exit
+
+    # Exit codes
+    declare -A exit_codes
+    exit_codes=([SUCCESS]=0 [FAIL]=1)
+else
+    exit_codes=1
+fi
+
+
+
+me=$(basename $0)
+binpath=$(dirname $0)
+script=project/web_crawler.py
+
+# Usage functions
+function synopsis {
+    synopsis=$(python $script 2>&1 | head -1 | sed -e 's/usage: \(.*\)/\1/')
+    synopsis=${synopsis/.py/}
+    echo $synopsis
+}
+
+function get_options {
+	pos_args="positional arguments"
+	opt_args="optional arguments"
+    export pattern_one=$pos_args
+    export pattern_two=$opt_args
+	usage_txt=$(python $script --help)
+    script="$(cat <<"EOF"
+    # Get each option
+    if ((/$ENV{pattern_one}/../$ENV{pattern_two}/) &&    # Print anything between
+        !(/$ENV{pattern_one}/||/$ENV{pattern_two}/)) {   # the two patterns
+        $opt = $_;
+    }
+    if ($opt =~ /^\s{3,}/) {
+        # Remove traling or leading spaces
+        $opt =~ s/^\s+|\s+\n$//g;
+        print("\t" x 4 . $opt);
+    }
+    elsif ($opt =~ /^\s+/) {
+        # Remove traling or leading spaces
+        $opt =~ s/^\s+|\s+\n$//g;
+        # Add double hypen for positional arguments
+        $opt =~ s/^(.+)$/--$1/;
+        # Readjust the spacing
+        $opt =~ s/\s{2,}/\t\t/;
+        if ($opt =~ /--.{1,5}\t/) {
+            $opt =~ s/(.+)\t/$1\t\t/;
+        }
+        if ($opt) {
+            print("$opt");
+        }
+    }
+EOF
+)"
+
+    # Get positional arguments
+	echo "$usage_txt" | perl -ne "$script"
+    # Get optional arguments
+    script="$(cat <<"EOF"
+    my $pad = " " x 5;
+    if ($can_print) {
+        if ($_ =~ /^\s+[a-zA-Z]+/) {
+            if ($_ !~ /^\s+$/) {
+                print($pad . $pad . " " x 3 . $_);
+            }
+            next;
+        }
+        else {
+            my $opt = $_;
+            # Remove traling or leading spaces
+            $opt =~ s/^\s+|\s+$//g;
+            # Add double hypen for positional arguments
+            $opt =~ s/^[^-](.+)$/--$1/;
+            $opt =~ s/^(.+)$/${pad}${1}\n/;
+            # Readjust the spacing
+            $opt =~ s/(.+)(\s{2,})/$1\t\t/;
+            if ($opt !~ /^\s+$/) {
+                print("\n$opt");
+            }
+        }
+    }
+    if (/$ENV{pattern_two}/) {
+        $can_print = 1;
+    }
+EOF
+)"
+    echo "$usage_txt" | perl -ne "$script"
+}
+
+function get_version {
+    echo $(python $script --version 2>&1)
+}
+
+function usage {
+    bold=$(tput bold)
+    underline=$(tput smul)
+    reset=$(tput sgr0)
+	cat <<-END
+${bold}NAME${reset}
+     ${me} -- calling costs web crawler
+
+${bold}SYNOPSIS${reset}
+     $(synopsis)
+     (See the OPTIONS section for alternate option syntax with long option names.)
+
+${bold}DESCRIPTION${reset}
+     ${underline}${me}${reset} is a simple web crawler for networks’ international calling costs.
+
+     The script queries a network’s website directly to obtain a list of calling costs.
+     These costs are: based on country zones, per minute and only related to calls to
+     a foreign country from the UK.
+
+     ${underline}${me}${reset} requires a JSON file containing:
+         - the operator URL
+         - the list of country zones
+         - the file structure for the Selenium driver
+
+     A log file can be used to track the crawling process, if not supplied then all the
+     messages will be printed to STDOUT (default).
+
+${bold}OPTIONS${reset}
+     $(get_options)
+
+${bold}EXAMPLES${reset}
+     TODO: Show some examples of how to use this script.
+
+${bold}REQUIREMENTS${reset}
+     Python modules: argparse, coloredlog, chromedriver, selenium
+
+${bold}EXIT CODES${reset}
+     0 - Success
+     1 - Failure
+
+${bold}AUTHOR${reset}
+     Luigi Riefolo <luigi.riefolo@gmail.com>
+
+${bold}LICENSE${reset}
+     This script is in the public domain, free from copyrights or restrictions.
+
+${bold}VERSION${reset}
+     $(get_version)
+
+END
+}
+
+
+# Script invoked with no command-line args
+if [[ $# == 0 ]]
+then
+	usage
+	exit $E_OPTERROR
+fi
+
+while getopts ":h" opt
+do
+	case $opt in
+		h)
+      		usage
+      		exit 1
+      		;;
+		:)
+      		echo "Option -$OPTARG requires an argument." >&2
+      		exit 1
+      		;;
+    	\?)
+      		echo "Invalid option: -$OPTARG" >&2
+			exit FAIL
+      		;;
+  	esac
+done
+
+
+python "$binpath/../$script" $@

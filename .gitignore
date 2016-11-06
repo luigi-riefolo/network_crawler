@@ -1,0 +1,6 @@
+*.py[co]
+*.swp
+*.DS_STORE
+*.log
+.*/
+MANIFEST
