@@ -9,7 +9,7 @@ INSTALLATION
 
 SYNOPSIS
 
-    web_crawler [-h] [--json] [--log-dir dir] [--log-level level]
+    web_crawler --data [file] [-h] [--json] [--log-dir [dir]] [--log-level [level]] [-o [of]] [-q] [-v]
 
     (See the OPTIONS section for alternate option syntax with long option names.)
 
