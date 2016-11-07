@@ -20,7 +20,7 @@ FAIL=1
 
 # Usage functions
 function synopsis {
-    synopsis=$(python $script 2>&1 | head -1 | sed -e 's/usage: \(.*\)/\1/')
+    synopsis=$(python $script -h 2>&1 | sed -n '/web_crawler.py/,/^$/p' | sed -e 's/usage: \(.*\)/\1/')
     synopsis=${synopsis/.py[c]/}
     echo $synopsis
 }
