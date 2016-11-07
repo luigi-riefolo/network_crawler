@@ -1,6 +1,6 @@
 NAME
 
-    web_crawler -- networks' international calling costs web crawler
+    network_crawler -- networks' international calling costs web crawler
 
 INSTALLATION
 
@@ -9,19 +9,19 @@ INSTALLATION
 
 SYNOPSIS
 
-    web_crawler --data [file] [-h] [--json] [--log-dir [dir]] [--log-level [level]] [-o [of]] [-q] [-v]
+    network_crawler --data [file] [-h] [--json] [--log-dir [dir]] [--log-level [level]] [-o [of]] [-q] [-v]
 
     (See the OPTIONS section for alternate option syntax with long option names.)
 
 DESCRIPTION
 
-    web_crawler is a simple web crawler for networks’ international calling costs.
+    network_crawler is a simple web crawler for networks’ international calling costs.
 
     The script queries a network’s website directly to obtain a list of calling costs.
     These costs are: based on country zones, per minute and only related to calls to
     a foreign country from the UK.
 
-    web_crawler requires a JSON file containing:
+    network_crawler requires a JSON file containing:
         - operator name
         - operator URL
         - list of country zones
@@ -58,23 +58,23 @@ EXAMPLES
 
     Run with logging at debug level, printing to STDOUT:
 
-        web_crawler --data operators.json -l "debug"
+        network_crawler --data operators.json -l "debug"
 
     Print the output to STDOUT in JSON format:
 
-        web_crawler --data operators.json --json
+        network_crawler --data operators.json --json
 
     Print the output to a file in JSON format:
 
-        web_crawler --data operators.json --json --out file.json
+        network_crawler --data operators.json --json --out file.json
 
     Log the process to a specific directory:
 
-        web_crawler --data operators.json --lod-dir /var/log/
+        network_crawler --data operators.json --lod-dir /var/log/
 
     Dry-run mode, only prints the logging messages:
 
-        web_crawler --data operators.json -q
+        network_crawler --data operators.json -q
 
 REQUIREMENTS
 
@@ -103,4 +103,4 @@ LICENSE
 
 VERSION
 
-    web_crawler 1.0
+    network_crawler 1.0

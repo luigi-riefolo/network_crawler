@@ -18,15 +18,13 @@ import argparse
 import logging
 import coloredlogs
 
-
 try:
     from selenium import webdriver
     from selenium.common.exceptions import WebDriverException
 except ImportError as imp_err:
     raise ImportError('Failed to import \'selenium\':\n' + imp_err)
 
-from network_crawler.api.operator_web_site import OperatorWebSite
-from __init__ import __version__
+from __init__ import __version__, OperatorWebSite
 
 
 SCRIPT = os.path.basename(__file__)

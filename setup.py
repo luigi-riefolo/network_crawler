@@ -35,7 +35,7 @@ setup(
     install_requires=map(str.strip, open('requirements.txt')),
     tests_require=['pytest>=2.8.0', 'coverage-4.2', 'pytest-cov-2.4.0'],
     platforms=['Linux'],
-    scripts=['scripts/web_crawler'],
+    scripts=['scripts/network_crawler'],
     data_files=[('network_crawler', ['requirements.txt'])],
     classifiers=(
         'Programming Language :: Python',

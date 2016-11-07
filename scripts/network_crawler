@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This bash script wraps the functionalities of web_crawler.py
+# This bash script wraps the functionalities of network_crawler.py
 
 me=$(basename $0)
 
@@ -11,7 +11,7 @@ print(os.path.abspath(inspect.getfile(network_crawler)))
 HERE
 ))
 script_dir="${script_dir/__init__.py[c]/}"
-script=${script_dir}web_crawler.pyc
+script=${script_dir}network_crawler.pyc
 
 
 # Exit codes
@@ -20,7 +20,7 @@ FAIL=1
 
 # Usage functions
 function synopsis {
-    synopsis=$(python $script -h 2>&1 | sed -n '/web_crawler.py/,/^$/p' | sed -e 's/usage: \(.*\)/\1/')
+    synopsis=$(python $script -h 2>&1 | sed -n '/network_crawler.py/,/^$/p' | sed -e 's/usage: \(.*\)/\1/')
     synopsis=${synopsis/.py[c]/}
     echo $synopsis
 }
@@ -174,23 +174,23 @@ ${bold}EXAMPLES${reset}
 
     Run with logging at debug level, printing to STDOUT:
 
-        web_crawler --data operators.json -l "debug"
+        network_crawler --data operators.json -l "debug"
 
     Print the output to STDOUT in JSON format:
 
-        web_crawler --data operators.json --json
+        network_crawler --data operators.json --json
 
     Print the output to a file in JSON format:
 
-        web_crawler --data operators.json --json --out file.json
+        network_crawler --data operators.json --json --out file.json
 
     Log the process to a specific directory:
 
-        web_crawler --data operators.json --lod-dir /var/log/
+        network_crawler --data operators.json --lod-dir /var/log/
 
     Dry-run mode, only prints the logging messages:
 
-        web_crawler --data operators.json -q
+        network_crawler --data operators.json -q
 
 ${bold}REQUIREMENTS${reset}
 
@@ -249,5 +249,5 @@ python "$script" $@
 ret=$?
 if [[ $ret -ne 0 ]];
 then
-    echo "See the documentation: web_crawler -h"
+    echo "See the documentation: network_crawler -h"
 fi
