@@ -8,6 +8,7 @@
                 { "click": ".//*[@id='paymonthly']" },
                 { "get_cost": ".//*[@id='landLine']/strong" }
             ],
+            "load_time": 10,
             "sleep_time": 3,
             "zones": [
                 "Canada",
