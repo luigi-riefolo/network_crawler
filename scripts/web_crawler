@@ -3,8 +3,16 @@
 # This bash script wraps the functionalities of web_crawler.py
 
 me=$(basename $0)
-binpath=$(dirname $0)
-script=project/web_crawler.py
+
+# Get the application location
+script_dir=$(python  <(cat <<HERE
+import os, inspect, network_crawler
+print(os.path.abspath(inspect.getfile(network_crawler)))
+HERE
+))
+script_dir="${script_dir/__init__.py[c]/}"
+script=${script_dir}web_crawler.pyc
+
 
 # Exit codes
 OK=0
@@ -13,8 +21,12 @@ FAIL=1
 # Usage functions
 function synopsis {
     synopsis=$(python $script 2>&1 | head -1 | sed -e 's/usage: \(.*\)/\1/')
-    synopsis=${synopsis/.py/}
+    synopsis=${synopsis/.py[c]/}
     echo $synopsis
+}
+
+function get_installation() {
+    echo "$script_dir"
 }
 
 function get_options {
@@ -111,16 +123,19 @@ EOF
     echo "$usage_txt" | perl -ne "$script"
 }
 
+function get_requirements {
+    awk '{printf("%s, ",$0)}' ${script_dir}requirements.txt | sed 's/, $//'
+}
+
 function get_version {
     version="$(python $script --version 2>&1)"
-    echo ${version/.py/}
+    echo ${version/.py[c]/}
 }
 
 function usage {
     bold=$(tput bold)
     underline=$(tput smul)
     reset=$(tput sgr0)
-    # redirect usage >&2
 	cat <<-END
 ${bold}NAME${reset}
 
@@ -134,9 +149,9 @@ ${bold}SYNOPSIS${reset}
 
 ${bold}DESCRIPTION${reset}
 
-    ${underline}${me}${reset} is a simple web crawler for networks’ international calling costs.
+    ${underline}${me}${reset} is a simple web crawler for networks' international calling costs.
 
-    The script queries a network’s website directly to obtain a list of calling costs.
+    The script queries a network's website directly to obtain a list of calling costs.
     These costs are: based on country zones, per minute and only related to calls to
     a foreign country from the UK.
 
@@ -159,29 +174,38 @@ ${bold}EXAMPLES${reset}
 
     Run with logging at debug level, printing to STDOUT:
 
-        web_crawler --data ../data/sites/operators.json -l "debug"
+        web_crawler --data operators.json -l "debug"
 
     Print the output to STDOUT in JSON format:
 
-        web_crawler --data ../data/sites/operators.json --json
+        web_crawler --data operators.json --json
 
     Print the output to a file in JSON format:
 
-        web_crawler --data ../data/sites/operators.json --json --out file.json
+        web_crawler --data operators.json --json --out file.json
 
     Log the process to a specific directory:
 
-        web_crawler --data ../data/sites/operators.json --lod-dir /var/log/
+        web_crawler --data operators.json --lod-dir /var/log/
 
+    Dry-run mode, only prints the logging messages:
+
+        web_crawler --data operators.json -q
 
 ${bold}REQUIREMENTS${reset}
 
-    Python modules: argparse, coloredlog, chromedriver, selenium
+    Python modules: $(get_requirements).
 
 ${bold}EXIT CODES${reset}
 
     0 - Success
     1 - Failure
+
+${bold}INSTALLATION${reset}
+
+    The application is installed in:
+
+        $(get_installation)
 
 ${bold}AUTHOR${reset}
 
@@ -189,42 +213,41 @@ ${bold}AUTHOR${reset}
 
 ${bold}LICENSE${reset}
 
-    This script is in the public domain, free from copyrights or restrictions.
+    The MIT License (MIT).
 
 ${bold}VERSION${reset}
 
-    $(get_version)
+    $(get_version).
 
 END
 }
 
-
 # Script invoked with no command-line args
-
 if [[ $# == 0 ]]
 then
 	usage
-	exit $E_OPTERROR
+	exit $FAIL
 fi
 
-optspec=":hv-:"
+optspec=":h-:"
 while getopts "$optspec" optchar; do
     case "${optchar}" in
+        -)
+            case "${OPTARG}" in
+                *)
+                    :
+                    ;;
+            esac;;
         h)
             usage
             exit $OK
             ;;
-        *)
-            if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
-                echo "Non-option argument: '-${OPTARG}'" >&2
-            fi
-            ;;
     esac
 done
 
-python "$binpath/../$script" $@
+python "$script" $@
 ret=$?
 if [[ $ret -ne 0 ]];
 then
-    echo "See the usage: web_crawler -h"
+    echo "See the documentation: web_crawler -h"
 fi

@@ -12,7 +12,11 @@
             "sleep_time": 3,
             "zones": [
                 "Canada",
-                "Pakistan"
+                "Germany",
+                "Iceland",
+                "Pakistan",
+                "Singapore",
+                "South Africa"
             ]
         }
     ]

@@ -113,7 +113,7 @@ class OperatorWebSite(object):
         """
         Return an object attribute.
 
-        It checks whether an attribute exists and returns it.
+        Utility function, it checks whether an attribute exists and returns it.
         Otherwise an AttributeError exception is thrown.
         """
         attr = None
@@ -122,7 +122,7 @@ class OperatorWebSite(object):
         except AttributeError:
             class_name = obj.__class__.__name__
             err_msg = ('Class \'{}\' '
-                       'does not contain \'{}\'\n%s').format(class_name, name)
+                       'does not contain \'{}\'\n').format(class_name, name)
             logging.exception(err_msg)
 
         return attr

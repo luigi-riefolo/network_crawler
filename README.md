@@ -2,6 +2,11 @@ NAME
 
     web_crawler -- networks' international calling costs web crawler
 
+INSTALLATION
+
+    cd network_crawler
+    python setup.py install
+
 SYNOPSIS
 
     web_crawler [-h] [--json] [--log-dir dir] [--log-level level]
@@ -53,19 +58,23 @@ EXAMPLES
 
     Run with logging at debug level, printing to STDOUT:
 
-        web_crawler --data ../data/sites/operators.json -l "debug"
+        web_crawler --data operators.json -l "debug"
 
     Print the output to STDOUT in JSON format:
 
-        web_crawler --data ../data/sites/operators.json --json
+        web_crawler --data operators.json --json
 
     Print the output to a file in JSON format:
 
-        web_crawler --data ../data/sites/operators.json --json --out file.json
+        web_crawler --data operators.json --json --out file.json
 
     Log the process to a specific directory:
 
-        web_crawler --data ../data/sites/operators.json --lod-dir /var/log/
+        web_crawler --data operators.json --lod-dir /var/log/
+
+    Dry-run mode, only prints the logging messages:
+
+        web_crawler --data operators.json -q
 
 REQUIREMENTS
 
@@ -76,13 +85,21 @@ EXIT CODES
     0 - Success
     1 - Failure
 
+TESTS
+
+    python tests/test_operator_web_site.py
+
+    or
+
+    py.test
+
 AUTHOR
 
     Luigi Riefolo <luigi.riefolo@gmail.com>
 
 LICENSE
 
-    This script is in the public domain, free from copyrights or restrictions.
+    The MIT License (MIT).
 
 VERSION
 

@@ -18,12 +18,6 @@ import argparse
 import logging
 import coloredlogs
 
-# os.EX_USAGE
-# os.EX_NOINPUT
-# os.EX_DATAERR
-# os.EX_UNAVAILABLE
-# os.EX_OSFILE
-# os.EX_CANTCREAT
 
 try:
     from selenium import webdriver
@@ -31,13 +25,13 @@ try:
 except ImportError as imp_err:
     raise ImportError('Failed to import \'selenium\':\n' + imp_err)
 
-from api.operator_web_site import OperatorWebSite
+from network_crawler.api.operator_web_site import OperatorWebSite
+from __init__ import __version__
 
-__author__ = 'Luigi Riefolo'
-__version__ = '1.0'
+
 SCRIPT = os.path.basename(__file__)
 LOG_FILE = SCRIPT + '.log'
-args = None
+script_args = None
 
 # Check Python version
 if sys.version_info < (2, 6):
@@ -68,7 +62,7 @@ def is_number(value):
     return is_int(value) or is_float(value)
 
 
-def process_actions(zone, operator_data, sleep_time):
+def process_actions(zone, operator_obj, sleep_time):
     """ Processes all the required actions. """
     res = None
 
@@ -78,7 +72,7 @@ def process_actions(zone, operator_data, sleep_time):
         'type_zone': {'zone': zone}}
 
     # Process each action
-    for action_data in operator_data.get_actions():
+    for action_data in operator_obj.get_actions():
         action_name = action_data.keys()[0]
         path = action_data.values()[0]
 
@@ -91,7 +85,7 @@ def process_actions(zone, operator_data, sleep_time):
             action_args[key] = value
 
         # Execute the requested web driver action
-        method = operator_data.get_attr(operator_data, action_name)
+        method = operator_obj.get_attr(operator_obj, action_name)
 
         # Stop processing the current zone
         # if the method execution fails
@@ -112,11 +106,11 @@ def log(msg, not_new_line=None):
 
     # Do not log in quiet mode or if
     # a JSON document is required
-    if args.quiet or args.json:
+    if script_args.quiet or script_args.json:
         return
 
     # Print to STDOUT
-    if args.out is None:
+    if script_args.out is None:
         if not_new_line:
             print(msg, end='')
         else:
@@ -124,9 +118,9 @@ def log(msg, not_new_line=None):
     # Print to file
     else:
         if not_new_line:
-            print(msg, file=args.out, end='')
+            print(msg, file=script_args.out, end='')
         else:
-            print(msg + os.linesep, file=args.out)
+            print(msg + os.linesep, file=script_args.out)
 
 
 def process_data(data):
@@ -148,7 +142,7 @@ def process_data(data):
             driver.get(url)
 
             # Create the operator web site object
-            operator_data = OperatorWebSite(driver, operator)
+            operator_obj = OperatorWebSite(driver, operator)
 
             # Dict containing the list of zones
             # with their respective costs
@@ -156,12 +150,12 @@ def process_data(data):
 
             # Process each zone
             log('Country zones:\t')
-            for zone in operator_data.get_zones():
+            for zone in operator_obj.get_zones():
                 logging.info('Zone: %s\t', zone)
                 log('\t\t{}'.format(zone).ljust(30), not_new_line=True)
 
                 cost = process_actions(
-                    zone, operator_data, operator['sleep_time'])
+                    zone, operator_obj, operator['sleep_time'])
 
                 # Check if the result is a number
                 if is_number(cost):
@@ -172,7 +166,7 @@ def process_data(data):
                     logging.error('Cost does not appear to be a number')
 
             # Add the costs to the output object
-            if args.json is not None:
+            if script_args.json is not None:
                 operator["costs"] = costs
 
     except WebDriverException:
@@ -213,8 +207,8 @@ def load_data(file_name):
 
 def init_log():
     """ Initialise the logging. """
-    level = args.log_level
-    log_dir = args.log_dir
+    level = script_args.log_level
+    log_dir = os.path.abspath(script_args.log_dir)
     logger = logging.getLogger(__name__)
     log_format = (
         '[%(asctime)s] [%(levelname)s] '
@@ -256,16 +250,18 @@ def init_log():
 
 def init_out_file():
     """ Open the output file. """
-    log('Printing output to \'%s\'' % args.out)
-    if args.out is not None:
+    script_args.out = os.path.abspath(script_args.out)
+    log('Printing output to \'%s\'' % script_args.out)
+    if script_args.out is not None:
         try:
-            if args.json:
-                json_re = re.compile(u'\.json$')
-                if not re.match(json_re, args.out):
-                    args.out += ".json"
-            args.out = open(args.out, 'w')
+            if script_args.json:
+                json_re = re.compile(u'.json$')
+                if not re.match(json_re, script_args.out):
+                    script_args.out += ".json"
+            script_args.out = open(script_args.out, 'w')
         except IOError:
-            logging.exception('Could not open output file \'%s\'', args.out)
+            logging.exception(
+                'Could not open output file \'%s\'', script_args.out)
             sys.exit(os.EX_IOERR)
 
 
@@ -276,11 +272,12 @@ def get_args():
         formatter_class=argparse.RawTextHelpFormatter,
         description=__doc__)
 
-    # Positional args
+    # Optional args
     parser.add_argument(
-        'data',
-        metavar='data',
+        '--data',
+        metavar='[file]',
         type=str,
+        required=True,
         help=textwrap.dedent("""\
         File containing the operator URL,
         the list of country zones and the file
@@ -292,7 +289,6 @@ def get_args():
         default=argparse.SUPPRESS,
         help=textwrap.dedent("""\
         Show this help message and exit."""))
-    # Optional args
     parser.add_argument(
         '--json',
         action='store_true',
@@ -300,7 +296,7 @@ def get_args():
         Write the results using a JSON format."""))
     parser.add_argument(
         '--log-dir',
-        metavar='dir',
+        metavar='[dir]',
         type=str,
         default='/tmp/',
         help=textwrap.dedent("""\
@@ -308,7 +304,7 @@ def get_args():
         folder (default /tmp)."""))
     parser.add_argument(
         '--log-level',
-        metavar='level',
+        metavar='[level]',
         default='info',
         type=str,
         help=textwrap.dedent("""\
@@ -317,7 +313,7 @@ def get_args():
     parser.add_argument(
         '-o',
         '--out',
-        metavar='of',
+        metavar='[of]',
         type=str,
         help='Write output to file (default STDOUT).')
     parser.add_argument(
@@ -338,25 +334,23 @@ def get_args():
 def main():
     """ Main. """
     try:
-        global args
-        args = get_args()
-        print('ARGS: ' + str(args))
-        sys.exit(9)
+        global script_args
+        script_args = get_args()
         init_log()
-        if args.out is not None:
+        if script_args.out is not None:
             init_out_file()
-        data = load_data(os.path.realpath(args.data))
+        data = load_data(os.path.abspath(script_args.data))
         process_data(data)
         # Print the output in JSON format
-        if args.json:
-            out_file = args.out
-            if args.out is None:
+        if script_args.json:
+            out_file = script_args.out
+            if script_args.out is None:
                 out_file = sys.stdout
             json.dump(data, fp=out_file,
                       indent=4, encoding='utf-8')
 
-        if args.out is not None:
-            args.out.close()
+        if script_args.out is not None:
+            script_args.out.close()
     # Ctrl-C
     except KeyboardInterrupt, err:
         raise err
