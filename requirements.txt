@@ -1,0 +1,4 @@
+argparse
+coloredlogs
+selenium
+chromedriver
