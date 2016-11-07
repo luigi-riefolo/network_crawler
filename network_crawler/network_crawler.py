@@ -123,6 +123,7 @@ def log(msg, not_new_line=None):
 
 def process_data(data):
     """ Parse the JSON object containing the data. """
+    driver = None
     try:
         # Chrome driver
         driver = webdriver.Chrome()
@@ -167,13 +168,14 @@ def process_data(data):
             if script_args.json is not None:
                 operator["costs"] = costs
 
-    except WebDriverException:
-        driver.quit()
-        raise
+    except WebDriverException as err:
+        raise err
+        sys.exit(os.EX_OSERR)
     finally:
         # Close and quit the browser
-        logging.debug('Closing web driver')
-        driver.close()
+        if driver is not None:
+            logging.debug('Closing web driver')
+            driver.close()
 
 
 def load_data(file_name):

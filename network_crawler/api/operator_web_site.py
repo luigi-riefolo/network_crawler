@@ -11,7 +11,7 @@ try:
     from selenium.webdriver.common.by import By
     from selenium.webdriver.common.keys import Keys
 except ImportError as imp_err:
-    raise ImportError('Failed to import \'selenium\':\n' + imp_err)
+    raise ImportError('Failed to import \'selenium\':\n' + str(imp_err))
 
 
 """
