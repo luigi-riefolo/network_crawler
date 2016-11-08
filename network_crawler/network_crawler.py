@@ -22,7 +22,7 @@ try:
     from selenium import webdriver
     from selenium.common.exceptions import WebDriverException
 except ImportError as imp_err:
-    raise ImportError('Failed to import \'selenium\':\n' + imp_err)
+    raise ImportError('Failed to import \'selenium\':\n' + str(imp_err))
 
 from __init__ import __version__, OperatorWebSite
 
