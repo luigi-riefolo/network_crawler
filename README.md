@@ -78,7 +78,7 @@ EXAMPLES
 
 REQUIREMENTS
 
-    Python modules: argparse, coloredlog, chromedriver, selenium
+    Python modules: argparse, coloredlogs, chromedriver, selenium
 
 EXIT CODES
 
